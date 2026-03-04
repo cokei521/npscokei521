@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cokei521-内网穿透</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="font-awesome.min.css" rel="stylesheet">
+	
+	
+	
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4fd1c5', // 更适合夜间模式的青色
+                        secondary: '#a0aec0',
+                        light: '#1a202c', // 深色背景
+                        dark: '#e2e8f0',   // 浅色文字
+                        'dark-100': '#2d3748',
+                        'dark-200': '#4a5568',
+                        'dark-300': '#718096'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .transition-transform {
+                transition: transform 0.3s ease;
+            }
+
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            }
+        }
+    </style>
+    <style>
+        /* 基础动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* 滚动条美化 - 夜间模式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-light text-dark">
+<!-- 导航栏 -->
+<header
+        class="sticky top-0 z-50 bg-dark-100/95 backdrop-blur-sm border-b border-dark-200 shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold text-dark">cokei521-内网穿透</span>
+        </div>
+
+        <!-- 桌面导航 -->
+        <nav class="hidden md:flex items-center space-x-8">
+            <a href="" target="_top" class="text-primary font-medium hover:text-primary/80 transition-colors">首页</a>
+            <a href="http://frp.cokei521.top" target="_top"
+               class="text-dark-300 font-medium hover:text-primary transition-colors">控制台</a>
+            <a href="https://www.081011.xyz" target="_blank"
+               class="text-dark-300 font-medium hover:text-primary transition-colors">帮助</a>
+        </nav>
+
+        <!-- 移动端菜单按钮 -->
+        <button id="mobileMenuBtn" class="md:hidden text-dark-300 hover:text-primary">
+            <i class="fa fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- 移动端导航菜单 -->
+    <div id="mobileMenu" class="hidden md:hidden bg-dark-100 border-t border-dark-200">
+        <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+            <a href="#" target="_top"
+               class="text-primary font-medium py-2 hover:text-primary/80 transition-colors">首页</a>
+            <a href="#" target="_top"
+               class="text-dark-300 font-medium hover:text-primary transition-colors">控制台</a>
+            <a href="https://github.com/cokei521/nps-yisier" target="_blank"
+               class="text-dark-300 font-medium hover:text-primary transition-colors">社区版</a>
+        </div>
+    </div>
+</header>
+
+<!-- 英雄区域 -->
+<section class="bg-gradient-to-br from-dark-100 to-light min-h-[60vh] flex items-center justify-center py-16">
+    <div class="container mx-auto px-4 text-center">
+        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-dark text-shadow mb-6 animate-fadeInUp"
+            style="animation-delay: 0.1s">
+            cokei521-内网穿透
+        </h1>
+        <p class="text-[clamp(1.1rem,2vw,1.5rem)] text-dark-300 max-w-3xl mx-auto mb-10 animate-fadeInUp"
+           style="animation-delay: 0.3s">内网穿 · 外网连 · 简单易上手傻瓜式操作让您轻松上手告别小白</p>
+			<p class="text-[clamp(1.1rem,2vw,1.5rem)] text-dark-300 max-w-3xl mx-auto mb-10 animate-fadeInUp"
+           style="animation-delay: 0.3s">支持多种操作系统Windows、Linux、MacOS、NAS甚至安卓设备</p>
+        <p class="text-[clamp(1.1rem,2vw,1.5rem)] text-dark-300 max-w-3xl mx-auto mb-10 animate-fadeInUp"
+           style="animation-delay: 0.3s">基于NPS 0.26.10 版本二开而来，NPS接力项目.</p>
+        <p></p>
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 animate-fadeInUp" style="animation-delay: 0.5s">
+            <a href="#" target="_top"
+               class="bg-primary text-light font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center">
+                <i class="fa fa-rocket mr-2"></i> 开始使用
+            </a>
+            <a href="https://github.com/cokei521/nps-yisier" target="_blank"
+               class="bg-transparent border-2 border-primary text-primary font-semibold py-3 px-8 rounded-lg hover:bg-primary/10 transition-all transform hover:-translate-y-1 flex items-center justify-center">
+                <i class="fa fa-github mr-2"></i> 社区版
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 特性区域 -->
+<section class="py-20 bg-dark-100">
+    <div class="container mx-auto px-4">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-center text-dark mb-16">核心特性</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- 特性卡片 1 -->
+            <div class="bg-light rounded-xl p-8 shadow-md hover-scale transition-transform border border-dark-200">
+                <h3 class="text-xl font-bold text-dark mb-4">基础功能</h3>
+                <p class="text-dark-300">支持常用的HTTP(S)、TCP、UDP、STCP、SUDP、XTCP、SOCKS5_PROXY；支持流量统计</p>
+            </div>
+
+            <!-- 特性卡片 2 -->
+            <div class="bg-light rounded-xl p-8 shadow-md hover-scale transition-transform border border-dark-200">
+                <h3 class="text-xl font-bold text-dark mb-4">特色功能</h3>
+                <p class="text-dark-300">
+                    基于WEB管理配置，修改配置实时生效，无需手动重启客户端，支持官方FRP配置下发，支持多用户、多节点，隧道可以按需启用停用隧道</p>
+            </div>
+
+            <!-- 特性卡片 3 -->
+            <div class="bg-light rounded-xl p-8 shadow-md hover-scale transition-transform border border-dark-200">
+                <h3 class="text-xl font-bold text-dark mb-4">性能高效</h3>
+                <p class="text-dark-300">保留官方FRP的所有通信协议，修改了QUIC协议，相比原版FRP的QUIC效率更高</p>
+            </div>
+
+            <!-- 特性卡片 4 -->
+            <div class="bg-light rounded-xl p-8 shadow-md hover-scale transition-transform border border-dark-200">
+                <h3 class="text-xl font-bold text-dark mb-4">轻量化</h3>
+                <p class="text-dark-300">
+                    nps是一款轻量级、高性能、功能强大的内网穿透代理服务器，并带有功能强大的web管理端。</p>
+            </div>
+
+            <!-- 特性卡片 5 -->
+            <div class="bg-light rounded-xl p-8 shadow-md hover-scale transition-transform border border-dark-200">
+                <h3 class="text-xl font-bold text-dark mb-4">更多功能</h3>
+                <p class="text-dark-300">敬请期待</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 快速开始 -->
+<!-- <section class="py-20 bg-light">
+    <div class="container mx-auto px-4">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-center text-dark mb-4">快速开始</h2>
+        <p class="text-center text-dark-300 max-w-3xl mx-auto mb-16">只需简单几步，即可创建你的文档网站</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="space-y-8">
+                    <div class="flex gap-6">
+                        <div
+                            class="w-12 h-12 bg-primary text-light rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xl">
+                            1</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-dark mb-2">安装依赖</h3>
+                            <p class="text-dark-300 mb-4">使用 npm、yarn 或 pnpm 安装核心依赖</p>
+                            <div class="bg-dark-200 text-dark p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                npm install -g docs-cli
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6">
+                        <div
+                            class="w-12 h-12 bg-primary text-light rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xl">
+                            2</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-dark mb-2">创建项目</h3>
+                            <p class="text-dark-300 mb-4">初始化你的文档项目</p>
+                            <div class="bg-dark-200 text-dark p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                docs init my-project
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6">
+                        <div
+                            class="w-12 h-12 bg-primary text-light rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xl">
+                            3</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-dark mb-2">启动服务</h3>
+                            <p class="text-dark-300 mb-4">本地预览你的文档</p>
+                            <div class="bg-dark-200 text-dark p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                cd my-project && docs dev
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-dark-100 rounded-xl shadow-lg overflow-hidden border border-dark-200">
+                <div class="bg-dark-200 p-3 flex items-center gap-2 border-b border-dark-300">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="text-dark-300 text-sm ml-2">终端</span>
+                </div>
+                <div class="p-5 font-mono text-sm text-dark bg-dark-200 h-96 overflow-y-auto">
+                    <p class="text-dark-300">$ npm install -g docs-cli</p>
+                    <p class="text-primary">✓ 安装成功</p>
+                    <br>
+                    <p class="text-dark-300">$ docs init my-project</p>
+                    <p>正在创建项目...</p>
+                    <p>✓ 项目初始化完成</p>
+                    <br>
+                    <p class="text-dark-300">$ cd my-project && docs dev</p>
+                    <p>启动开发服务器...</p>
+                    <p>文档服务运行在: <span class="text-blue-400">http://localhost:3000</span></p>
+                    <p>按 Ctrl+C 停止服务</p>
+                    <p class="text-primary mt-4">✓ 编译成功</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<!-- 推荐案例 -->
+<!-- <section class="py-20 bg-dark-100">
+    <div class="container mx-auto px-4">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-center text-dark mb-16">推荐案例</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+                class="bg-light rounded-xl overflow-hidden shadow-md hover-scale transition-transform border border-dark-200">
+                <img src="https://picsum.photos/id/26/800/450" alt="项目案例" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark mb-2">企业文档系统</h3>
+                    <p class="text-dark-300 mb-4">为大型企业打造的内部文档系统，支持权限管理和多版本控制。</p>
+                    <a href="#" class="text-primary font-medium hover:text-primary/80 flex items-center gap-1">
+                        查看详情 <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div
+                class="bg-light rounded-xl overflow-hidden shadow-md hover-scale transition-transform border border-dark-200">
+                <img src="https://picsum.photos/id/48/800/450" alt="项目案例" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark mb-2">开源项目文档</h3>
+                    <p class="text-dark-300 mb-4">为开源项目提供专业的文档站点，支持贡献指南和API参考。</p>
+                    <a href="#" class="text-primary font-medium hover:text-primary/80 flex items-center gap-1">
+                        查看详情 <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div
+                class="bg-light rounded-xl overflow-hidden shadow-md hover-scale transition-transform border border-dark-200">
+                <img src="https://picsum.photos/id/60/800/450" alt="项目案例" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark mb-2">产品说明书</h3>
+                    <p class="text-dark-300 mb-4">为软件产品创建用户友好的使用手册和帮助文档。</p>
+                    <a href="#" class="text-primary font-medium hover:text-primary/80 flex items-center gap-1">
+                        查看详情 <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<!-- CTA区域 -->
+<!-- <section class="py-20 bg-gradient-primary text-dark">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">准备好开始创建你的文档了吗？</h2>
+        <p class="text-xl text-dark-300 max-w-2xl mx-auto mb-10">立即开始，享受高效的文档编写体验</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="#"
+                class="bg-primary text-light font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                立即开始
+            </a>
+            <a href="#"
+                class="bg-transparent border-2 border-primary text-primary font-semibold py-3 px-8 rounded-lg hover:bg-primary/10 transition-all transform hover:-translate-y-1">
+                了解更多
+            </a>
+        </div>
+    </div>
+</section> -->
+
+<!-- 页脚 -->
+<footer class="bg-light text-dark py-12">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="text-lg font-bold">介绍</span>
+                </div>
+                <p class="text-dark-300 mb-4">为个人公益性朋友之间共享使用，如果你有帮助欢迎给予我们一定的捐助来维持项目的长期发展。</p>
+                <div class="flex space-x-4">
+                    <a href="https://github.com/cokei521/nps-yisier" target="_blank"
+                       class="text-dark-300 hover:text-primary transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                </div>
+
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold mb-4">捐赠</h3>
+                <ul class="space-y-2">
+                    <div class="flex space-x-4">
+                        <a href="http://www.cokei521.top" target="_top"
+                           class="text-dark-300 hover:text-primary transition-colors">
+                            <img src="cokei521.png" alt="image" style="max-width: 100%;">
+                        </a>
+                    </div>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold mb-4">资源</h3>
+                <ul class="space-y-2">
+                    <li><a href="http://www.cokei521.top" target="_top"
+                           class="text-dark-300 hover:text-primary transition-colors">文档</a></li>
+                    <li><a href="http://www.081011.xyz" target="_top"
+                           class="text-dark-300 hover:text-primary transition-colors">视频教程</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold mb-4">关于</h3>
+                <ul class="space-y-2">
+                    <img src="cokei521.png" alt="image" style="max-width: 100%;">
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-dark-200 pt-8 text-center text-dark-300">
+            <p>&copy; 2025 cokei521. 保留所有权利.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- 返回顶部按钮 -->
+<button id="backToTop"
+        class="fixed bottom-8 right-8 bg-primary text-light w-12 h-12 rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+    <i class="fa fa-arrow-up"></i>
+</button>
+
+<script>
+    // 移动端菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // 返回顶部功能
+    const backToTopBtn = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.remove('opacity-0', 'invisible');
+            backToTopBtn.classList.add('opacity-100', 'visible');
+        } else {
+            backToTopBtn.classList.remove('opacity-100', 'visible');
+            backToTopBtn.classList.add('opacity-0', 'invisible');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // 导航栏滚动效果
+    const header = document.querySelector('header');
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            header.classList.add('py-2');
+            header.classList.remove('py-3');
+        } else {
+            header.classList.add('py-3');
+            header.classList.remove('py-2');
+        }
+        lastScrollY = window.scrollY;
+    });
+
+    // 为所有卡片添加进入动画
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.hover-scale');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {threshold: 0.1});
+
+        cards.forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
+</body>
+
+</html>
